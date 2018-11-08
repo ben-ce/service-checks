@@ -1,22 +1,23 @@
 #!/bin/bash
 
 today=`date +"%Y-%m-%d"`
-logdir="$HOME/logdir"
+logparse="$HOME/logparse"
+logpath='/var/log/nginx'
 
 mail_command(){
 	/usr/sbin/sendmail -t < mail.txt
 }
 
 # match access log file contents, igy mindig megvan a teljes lista, de csak egyszer
-for i in $(ls -d -1 -t /var/log/nginx/access.log*);do
-	zgrep -B 1 -h "enyem[.]html" $i >> $logdir/logmatch-$today
+for i in $(ls -d -1 -t $logpath/access.log*);do
+	zgrep -B 1 "GET /enyem[.]html" $i >> $logparse/logmatch-$today
 done
 
 # determine last two days' logmatch files
-file1=$(ls -1t $logdir/ | head -n 1)
-file2=$(ls -1t $logdir/ | head -n 2 | tail -n 1)
+file1=$(ls -1t $logparse/ | head -n 1)
+file2=$(ls -1t $logparse/ | head -n 2 | tail -n 1)
 
-filediff=$(diff $logdir/$file1 $logdir/$file2)
+filediff=$(diff $logparse/$file1 $logdir/$file2)
 
 # alert if any new matching lines are present
 if [[ -z $filediff ]]; then
@@ -34,5 +35,5 @@ else
 fi
 
 # keep only the last logmatch file
-rm $logdir/$file2
-mv $logdir/$file1 $logdir/$file1.old
+rm $logparse/$file2
+mv $logparse/$file1 $logdir/$file1.old
