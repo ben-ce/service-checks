@@ -25,7 +25,9 @@ filediff=$(diff $logparse/$file1 $logparse/$file2)
 # alert if any new matching lines are present
 if [[ -z $filediff ]]; then
     echo "$today : file diff empty, no new matching lines" >> $scriptlog
-else 
+
+# if new additional lines in the file diff output, then create and send mail
+elif grep "^<" $filediff &>/dev/null; then
     echo "$today : new matching line, composing mail.txt ..." >> $scriptlog
 
     # compose mail
@@ -33,10 +35,15 @@ else
     echo "From:account@domain.net" >> $mailtext
     echo "Subject: logmonitor alert" >> $mailtext
     echo "" >> $mailtext
-    echo "$filediff" >> $mailtext
+    echo "New lines in the logs:"
+    grep "^<" "$filediff" >> $mailtext
 	
     # sendmail -t < $mailtext && echo "$today : mail sent" >> $scriptlog || echo "$today : mail command error" >> $scriptlog
     # TODO configure /etc/ssmtp/ssmtp.conf with mailserver data + account
+    
+# if the file diff output indicates that they do not match, then check if it is because of logrotation removing files from the logpath thus the todays $logparse file and yesterdays *.old file do not match
+elif grep "^>" $filediff &>/dev/null; then  
+    echo "$today : files don't match because the logrotation removed some lines since yesterday" >> $scriptlog
 fi
 
 # keep only the last logmatch file
