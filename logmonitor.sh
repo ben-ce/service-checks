@@ -27,7 +27,7 @@ if [[ -z $filediff ]]; then
     echo "$today : file diff empty, no new matching lines" >> $scriptlog
 
 # if new additional lines in the file diff output, then create and send mail
-elif grep "^<" $filediff &>/dev/null; then
+elif grep "^<" $filediff; then
     echo "$today : new matching line, composing mail.txt ..." >> $scriptlog
 
     # compose mail
@@ -42,7 +42,7 @@ elif grep "^<" $filediff &>/dev/null; then
     # TODO configure /etc/ssmtp/ssmtp.conf with mailserver data + account
     
 # if the file diff output indicates that they do not match, then check if it is because of logrotation removing files from the logpath thus the todays $logparse file and yesterdays *.old file do not match
-elif grep "^>" $filediff &>/dev/null; then  
+elif grep "^>" $filediff; then  
     echo "$today : files don't match because the logrotation removed some lines since yesterday" >> $scriptlog
 fi
 
